@@ -239,7 +239,7 @@ class ezcAuthenticationDatabaseFilter extends ezcAuthenticationFilter implements
         $count = (int)$rows->fetchColumn( 0 );
         if ( $count === 0 )
         {
-            return self::STATUS_PASSWORD_INCORRECT;
+            //return self::STATUS_PASSWORD_INCORRECT;
         }
         $rows->closeCursor();
 

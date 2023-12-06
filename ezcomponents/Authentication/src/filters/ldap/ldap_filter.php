@@ -20,9 +20,9 @@
  * Example:
  * <code>
  */
- $credentials = new ezcAuthenticationPasswordCredentials( 'jan.modaal', 'qwerty' );
+ //$credentials = new ezcAuthenticationPasswordCredentials( 'jan.modaal', 'qwerty' );
  //$ldap = new ezcAuthenticationLdapInfo( 'localhost', 'uid=%id%', 'dc=example,dc=com', 389 );
-  $ldap = new ezcAuthenticationLdapInfo( '161.196.109.147', 'uid=%samAccountName%', 'dc=labcantv,dc=com,dc=ve', 389 );
+  $ldap = new ezcAuthenticationLdapInfo( 'ldap://161.196.109.147', 'uid=%id%', 'dc=labcantv,dc=com,dc=ve', 389 );
 
   $authentication = new ezcAuthentication( $credentials );
   $authentication->addFilter( new ezcAuthenticationLdapFilter( $ldap ) );
@@ -53,10 +53,10 @@
   process, by registering the data to be fetched before calling run(). Example:
   <code>
   // $filter is an ezcAuthenticationLdapFilter object*/
-  $filter->registerFetchData( array( 'name', 'company', 'mobile' ) );
+  //$filter->registerFetchData( array( 'name', 'company', 'mobile' ) );
  
   // after run()
-  $data = $filter->fetchData();
+  //$data = $filter->fetchData();
   //</code>
  
   //The $data array will be something like:

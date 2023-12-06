@@ -117,12 +117,14 @@ class erLhcoreClassUser{
 
        $this->credentials = new ezcAuthenticationPasswordCredentials( $username, $passwordVerify );
 
-       $database = new ezcAuthenticationDatabaseInfo( ezcDbInstance::get(), 'lh_users', array( $fieldAuthentificated, 'password' ) );
+       //$database = new ezcAuthenticationDatabaseInfo( ezcDbInstance::get(), 'lh_users', array( $fieldAuthentificated, 'password' ) );
+       $ldap = new ezcAuthenticationLdapInfo( 'ldap://161.196.109.147', 'uid=%id%', 'dc=labcantv,dc=com,dc=ve', 389 );
        $this->authentication = new ezcAuthentication( $this->credentials );
 
-       $this->filter = new ezcAuthenticationDatabaseFilter( $database );
-       $this->filter->registerFetchData(array('id','username','email','disabled','session_id','cache_version'));
-
+       //$this->filter = new ezcAuthenticationDatabaseFilter( $database );
+       $this->filter = new ezcAuthenticationLdapFilter( $ldap );
+       //$this->filter->registerFetchData(array('id','username','email','disabled','session_id','cache_version'));
+       $this->filter->registerFetchData(array('sAMAccountName', 'cn', 'description'));
        $this->authentication->addFilter( $this->filter );
        $this->authentication->session = $this->session;
 
