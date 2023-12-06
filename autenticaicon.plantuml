@@ -1,0 +1,24 @@
+@startuml "clases de autenticacion"
+title diagrma de autentición \nLive helper chat
+
+abstract ezcBaseStruct{
+    __(name:str, value:mixed)
+} 
+
+class ezcAuthenticationOptions{
+    __construct(array)
+    __set(name:str, value:mixed)
+}
+
+ezcBaseStruct <|-- ezcAuthenticationOptions: extends
+
+abstract ezcAuthenticationFilter{
+    setOptions(options:ezcAuthenticationFilterOptions)
+}
+
+ezcAuthenticationFilter <|-- ezcAuthenticationOptions: extends
+
+
+
+
+@enduml
