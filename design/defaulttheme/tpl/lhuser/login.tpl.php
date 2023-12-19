@@ -21,6 +21,7 @@
 
 <div class="form-group">
     <label><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('user/login','Username OR E-mail');?></label>
+    <h6>ruta: /var/www/html/lhc_web/design/defaulttheme/tpl/lhuser/login.tpl.php </h6>
     <input class="form-control" type="text" name="Username" value="" />
 </div>
 

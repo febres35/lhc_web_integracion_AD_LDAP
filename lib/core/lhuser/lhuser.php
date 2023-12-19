@@ -85,24 +85,29 @@ class erLhcoreClassUser{
 		$this->session->destroy();
 
         $sessionCookieName = erConfigClassLhConfig::getInstance()->getSetting( 'site', 'php_session_cookie_name', false );
-
-		$user = erLhcoreClassModelUser::findOne(array(
+		/*$user = erLhcoreClassModelUser::findOne(array(
+            
 			'filterlor' => array(
 				'username' => array($username),
                 'email' => array($username)
 			)
-		));  
-
+		));  */
+        $user = array(
+            'username' => $username,
+            'email' => $username
+        );
+        /*El siguiente codigo permite que el usuario entre con email o username
 		if ($user === false) {
             return false;
 		} else {
             $fieldAuthentificated = $user->email == $username ? 'email' : 'username';
-        }
+        }*/
 
 		$cfgSite = erConfigClassLhConfig::getInstance();
-		$secretHash = $cfgSite->getSetting( 'site', 'secrethash' );
+		//$secretHash = $cfgSite->getSetting( 'site', 'secrethash' );
 
-		if (strlen($user->password) == 40) { // this is old password
+		/* Validar que la clave viaja encriptada.
+        if (strlen($user->password) == 40) { // this is old password
 		    $passwordVerify = sha1($password.$secretHash.sha1($password));
 		    $changePassword = true;
         } else {
@@ -113,11 +118,14 @@ class erLhcoreClassUser{
 
     		$changePassword = false;
     		$passwordVerify = $user->password;
-	   }
-
-       $this->credentials = new ezcAuthenticationPasswordCredentials( $username, $passwordVerify );
-
+            // $passwordVerify verifica que la clave cumple con los parametros de autenticación.
+	   }*/
+       // Si el bloque anterior es satisfactorio se guarda el password en la variable credencial. 
+       //$this->credentials = new ezcAuthenticationPasswordCredentials( $username, $passwordVerify );
+       $this->credentials = new ezcAuthenticationPasswordCredentials( $username, $password );
+       // se crea la conexion al DB
        //$database = new ezcAuthenticationDatabaseInfo( ezcDbInstance::get(), 'lh_users', array( $fieldAuthentificated, 'password' ) );
+       //crea conexion al ldap
        $ldap = new ezcAuthenticationLdapInfo( 'ldap://161.196.109.147', 'uid=%id%', 'dc=labcantv,dc=com,dc=ve', 389 );
        $this->authentication = new ezcAuthentication( $this->credentials );
 
@@ -126,9 +134,11 @@ class erLhcoreClassUser{
        //$this->filter->registerFetchData(array('id','username','email','disabled','session_id','cache_version'));
        $this->filter->registerFetchData(array('sAMAccountName', 'cn', 'description'));
        $this->authentication->addFilter( $this->filter );
+       //$this->authentication->addFilter( $this->filterLDAP );
        $this->authentication->session = $this->session;
 
-       if ( !$this->authentication->run() ) {
+       //if ( !$this->authentication->run() ) {
+        if ( !$this->authentication->run($this->credentials) ) {
             return false;
             // build an error message based on $status
        } else {
@@ -221,13 +231,7 @@ class erLhcoreClassUser{
 	   		$database = new ezcAuthenticationDatabaseInfo( ezcDbInstance::get(), 'lh_users', array( 'id', 'password' ) );
 	   		$this->filter = new ezcAuthenticationDatabaseCredentialFilter( $database );
 	   		$this->filter->registerFetchData(array('id','username','email','disabled','cache_version'));
-	   		$this->authentication->addFilter( $this->filter );
-
-            $sessionCookieName = erConfigClassLhConfig::getInstance()->getSetting( 'site', 'php_session_cookie_name', false );
-	   		$this->authentication->session = $this->session;
-
-	   		if ( !$this->authentication->run() ) {
-	   			return false;
+	   		$this->authentication->addFilter( $this->AccessArray);
 	   		} else {
 	   			$data = $this->filter->fetchData();
 
