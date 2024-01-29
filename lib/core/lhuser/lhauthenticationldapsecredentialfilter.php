@@ -19,7 +19,7 @@
  *
  * Example:
  * <code>
- *
+ */
  /*$credentials = new ezcAuthenticationPasswordCredentials( 'jan.modaal', 'qwerty' );
  //$ldap = new ezcAuthenticationLdapInfo( 'localhost', 'uid=%id%', 'dc=example,dc=com', 389 );
   $ldap = new ezcAuthenticationLdapInfo( '161.196.109.147', 'uid=%samAccountName%', 'dc=labcantv,dc=com,dc=ve', 389 );
@@ -75,7 +75,6 @@
   @version 1.3.1
   @mainclass
  */
-#[\AllowDynamicProperties]
 class ezcAuthenticationLdapFilter extends ezcAuthenticationFilter implements ezcAuthenticationDataFetch
 {
     /**

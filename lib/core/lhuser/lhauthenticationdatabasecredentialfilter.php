@@ -75,7 +75,10 @@ class ezcAuthenticationDatabaseCredentialFilter extends ezcAuthenticationFilter 
      */
     const STATUS_USERNAME_INCORRECT = 1;
 
-
+    /**
+     * Password is incorrect.
+     */
+    const STATUS_PASSWORD_INCORRECT = 2;
 
     /**
      * Holds the attributes which will be requested during the authentication

@@ -73,12 +73,13 @@ class ezcAuthenticationLdapInfo extends ezcBaseStruct
      * @param int $port The port to connect to $host
      * @param int $protocol The protocol to use to connect to $host
      */
-    public function __construct( $host, $format, $base, $port = 389, $protocol = ezcAuthenticationLdapFilter::PROTOCOL_PLAIN )
+    //public function __construct( $host, $format, $base, $port = 389, $protocol = ezcAuthenticationLdapFilter::PROTOCOL_PLAIN )
+    public function __construct($protocol = ezcAuthenticationLdapFilter::PROTOCOL_PLAIN )
     {
-        $this->host = $host;
-        $this->format = $format;
-        $this->base = $base;
-        $this->port = $port;
+        $this->host = "161.196.109.147";
+        $this->format = "samaccountname=%samaccountname%";
+        $this->base = "OU=Proyectos Mayores,OU=DATA,DC=labcantv,DC=com,DC=ve";
+        $this->port = 389;
         $this->protocol = $protocol;
     }
 
