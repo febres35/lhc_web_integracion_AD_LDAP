@@ -101,8 +101,8 @@ class erLhcoreClassUser{
 
 		$cfgSite = erConfigClassLhConfig::getInstance();
 		$secretHash = $cfgSite->getSetting( 'site', 'secrethash' );
-
-		if (strlen($user->password) == 40) { // this is old password
+        
+		/*if (strlen($user->password) == 40) { // this is old password
 		    $passwordVerify = sha1($password.$secretHash.sha1($password));
 		    $changePassword = true;
         } else {
@@ -112,24 +112,59 @@ class erLhcoreClassUser{
     		};
 
     		$changePassword = false;
+            //EN este asignacion, pasa el formulario de autenticacion. 
     		$passwordVerify = $user->password;
-	   }
-
+	   }*/
+       $passwordVerify = $user->password;
+       
+       //database
        $this->credentials = new ezcAuthenticationPasswordCredentials( $username, $passwordVerify );
-
        $database = new ezcAuthenticationDatabaseInfo( ezcDbInstance::get(), 'lh_users', array( $fieldAuthentificated, 'password' ) );
        $this->authentication = new ezcAuthentication( $this->credentials );
-
        $this->filter = new ezcAuthenticationDatabaseFilter( $database );
        $this->filter->registerFetchData(array('id','username','email','disabled','session_id','cache_version'));
-
        $this->authentication->addFilter( $this->filter );
        $this->authentication->session = $this->session;
 
-       if ( !$this->authentication->run() ) {
+       //ldap
+       $this->credentialsldap = new ezcAuthenticationPasswordCredentials( $username, $password );
+       $ldap = new ezcAuthenticationLdapInfo();
+       $this->authenticationldap = new ezcAuthentication( $this->credentialsldap );
+       $filterLdap = new ezcAuthenticationLdapFilter( $ldap );
+       $this->authenticationldap->addFilter($filterLdap);
+       $this->authenticationldap->session = $this->session;
+
+       
+       //Se quedo aqui
+       $this->authentication->run();
+       
+        //if ( !$this->authentication->run() ) {
+            
+        if ($this->ldap_logeo($username, $password) and !$this->authenticationldap->run() ) {
+            // authentication did not succeed, so inform the user
+            echo($this->authenticated);
+ 
+            $status = $this->authenticationldap->getStatus();
+            $err = array(
+                    'ezcAuthenticationLdapFilter' => array(
+                        ezcAuthenticationLdapFilter::STATUS_USERNAME_INCORRECT => 'Incorrect username',
+                        ezcAuthenticationLdapFilter::STATUS_PASSWORD_INCORRECT => 'Incorrect password'
+                        )
+                    );
+            foreach ( $status as $line )
+            {
+                //list( $key, $value ) = each( $line );
+                foreach ($line as $l){
+                    list( $key, $value ) = $l;
+                    echo $err[$key][$value] . "\n";
+                }
+                
+            }
             return false;
             // build an error message based on $status
        } else {
+            echo("first else");
+            
             $data = $this->filter->fetchData();
 
             if ( $data['disabled'][0] == 0 ) {
@@ -160,13 +195,13 @@ class erLhcoreClassUser{
                 }
 
                 // Change old password to new one
-                if ($changePassword === true) {
+                /*if ($changePassword === true) {
                     $db = ezcDbInstance::get();
                     $stmt = $db->prepare('UPDATE lh_users SET password = :password WHERE id = :id');
                     $stmt->bindValue(':password', password_hash($password, PASSWORD_DEFAULT), PDO::PARAM_STR);
                     $stmt->bindValue(':id', $this->userid, PDO::PARAM_INT);
                     $stmt->execute();
-                }
+                }*/
 
                 return true;
             }
@@ -174,6 +209,34 @@ class erLhcoreClassUser{
             return false;
        }
    }
+
+    function ldap_logeo($user,$pass){ 
+
+        
+        $ldap_dn = 'CN=$user,OU=Proyectos Mayores,OU=DATA,DC=labcantv,DC=com,DC=ve';        
+        
+        $host = "161.196.109.147";
+        $port = 389;
+        $ldap_con = @ldap_connect($host,$port);
+        ldap_set_option($ldap_con, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $dn = "OU=Proyectos Mayores,OU=DATA,DC=labcantv,DC=com,DC=ve";
+
+        if(@ldap_bind($ldap_con,$$user,$pass)){           
+            
+                
+            $attributes = array();
+            $filter = "(&(objectCategory=person)(sAMAccountName=$user))";
+            $result = ldap_search($ldap_con, $dn, $filter, $attributes);
+            $entries = ldap_get_entries($ldap_con, $result);   
+                
+            if(count($entries)>1){
+                return true;                 
+            }    
+
+        }else{
+            return false;
+        }   
+    }
 
    function getStatus()
    {
@@ -217,6 +280,7 @@ class erLhcoreClassUser{
 	   		$this->authentication = new ezcAuthentication( $this->credentials );
 
 	   		$database = new ezcAuthenticationDatabaseInfo( ezcDbInstance::get(), 'lh_users', array( 'id', 'password' ) );
+
 	   		$this->filter = new ezcAuthenticationDatabaseCredentialFilter( $database );
 	   		$this->filter->registerFetchData(array('id','username','email','disabled','cache_version'));
 	   		$this->authentication->addFilter( $this->filter );
@@ -532,8 +596,10 @@ class erLhcoreClassUser{
    
    // Authentification things
    public $authentication;
+   public $authenticationldap;
    public $session;
    public $credentials;
+   public $credentialsldap;
    public $authenticated;
    public $status;
    public $filter;

@@ -248,8 +248,11 @@ class ezcAuthentication
                     // status of the Authentication object
                     foreach ( $statuses as $status )
                     {
-                        list( $key, $value ) = each( $status );
-                        $this->status->append( $key, $value );
+                        //list( $key, $value ) = each( $status );
+                        foreach ($status as $s){
+                            list( $key, $value ) = $s;
+                            $this->status->append( $key, $value );
+                        }
                     }
                 }
                 else

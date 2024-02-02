@@ -109,7 +109,7 @@ class ezcAuthenticationLdapFilter extends ezcAuthenticationFilter implements ezc
      *
      * @var array(string)
      */
-    protected $requestedData = array("cn","memberof","samaccountname");
+    protected $requestedData = array();
 
     /**
      * Holds the extra data fetched during the authentication process.

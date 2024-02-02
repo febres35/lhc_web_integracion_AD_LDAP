@@ -269,6 +269,7 @@ class ezcAuthenticationLdapFilter extends ezcAuthenticationFilter implements ezc
         // bind anonymously to see if username exists in the directory
         if ( @ldap_bind( $connection ) )
         {
+            
             //$search = @ldap_search( $connection, $this->ldap->base, str_replace( '%id%', $credentials->id, $this->ldap->format ), $this->requestedData );
             // @param connect, base("CN=$caden,OU=Proyectos Mayores,OU=DATA,DC=labcantv,DC=com,DC=ve"), filtro( sAMAccountName=$credentials->id), array de atributos.
             $search = @ldap_search( $connection, $this->ldap->base, str_replace( '%samaccountname%', $credentials->id, $this->ldap->format ), $this->requestedData );
@@ -317,7 +318,7 @@ class ezcAuthenticationLdapFilter extends ezcAuthenticationFilter implements ezc
                 return self::STATUS_OK;
             }
         }
-
+        echo("verificando Conexion");
         // bind failed, so something must be wrong (connection error or password incorrect)
         $err = ldap_errno( $connection );
         ldap_close( $connection );
@@ -392,6 +393,75 @@ class ezcAuthenticationLdapFilter extends ezcAuthenticationFilter implements ezc
     public function fetchData()
     {
         return $this->data;
+    }
+
+    public function isSuccess($user, $pass){
+        //$this->ldap_con = @ldap_connect($this->host,$this->port);
+        $this->ldap_con = @ldap_connect($this->ldap->host,$this->ldap->port);
+
+        ldap_set_option($this->ldap_con, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+        if(@ldap_bind($this->ldap_con,$user,$pass)){
+            return true;
+        }
+
+        return false;
+
+
+    }
+
+    public function Ldap_consultar($user){
+        
+        /**** Aqui vamos a cunsultar el samaccountname si existe ****/
+        //$this->ldap_con = @ldap_connect($this->host,$this->port);
+        $this->ldap_con = $this->ldapConnect($this->ldap->host);
+        ldap_set_option($this->ldap_con, LDAP_OPT_PROTOCOL_VERSION, 3);                
+        
+        if(@ldap_bind($this->ldap_con,$this->ldapuser,$this->pass)){
+
+            /**** Aqui cunsultamos el usuario de red si existe ****/
+            $attributes = array("cn","memberof","samaccountname");
+            $filter = "(&(objectCategory=person)(sAMAccountName=$user))";
+            $result = ldap_search($this->ldap_con, $this->dn, $filter, $attributes);
+            $entries = ldap_get_entries($this->ldap_con, $result); 
+
+            if(count($entries)>1){
+                $cn = $entries[0]["cn"][0];
+                $sama = $entries[0]["samaccountname"][0];
+                $rol = $entries[0]["memberof"][0];
+                $rol1 = explode(",", $rol);
+                $rol3 = str_replace("CN=", "", $rol1[0]);
+
+                return[
+                    $cn,
+                    $rol3,
+                    $sama,
+                ];                      
+            }  
+        }
+    } // fin de ldad_consultar 
+
+    public function ldap_logeo($user,$pass,$caden){ 
+
+        $ldap_dn = "CN=$caden,OU=Proyectos Mayores,OU=DATA,DC=labcantv,DC=com,DC=ve";        
+
+        $this->ldap_con = @ldap_connect($this->host,$this->port);
+        ldap_set_option($this->ldap_con, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+        if(@ldap_bind($this->ldap_con,$ldap_dn,$pass)){           
+                
+            $attributes = array();
+            $filter = "(&(objectCategory=person)(sAMAccountName=$user))";
+            $result = ldap_search($this->ldap_con, $this->dn, $filter, $attributes);
+            $entries = ldap_get_entries($this->ldap_con, $result);   
+                
+            if(count($entries)>1){
+                return true;                 
+            }    
+
+        }else{
+            return false;
+        }
     }
 }
 ?>
